@@ -8,21 +8,27 @@ jobs:
   k6_test:
     name: Run k6 Load Test
     runs-on: ubuntu-latest
-    # AQUÍ ESTÁ EL TRUCO SENIOR: Usar la imagen oficial que ya tiene k6 y Chromium
-    container:
-      image: grafana/k6:latest-with-browser
 
     steps:
       - name: Checkout del código
         uses: actions/checkout@v4
 
-      - name: Ejecutar k6 test
-        # Al estar dentro del contenedor, usamos k6 directamente
-        run: k6 run scripts/07_k6_browser.js
+      # PASO CLAVE: Instalar Chromium y dependencias en el Runner
+      - name: Instalar Chromium
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser
+
+      - name: Ejecutar k6 browser test
+        uses: grafana/k6-action@v0.3.1
+        with:
+          filename: scripts/07_k6_browser.js
+          # Le decimos a k6 dónde está el binario de Chromium instalado
+          flags: --env K6_BROWSER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
       - name: Subir Reporte HTML
         uses: actions/upload-artifact@v4
-        if: always() # Para que suba el reporte incluso si el test falla
+        if: always()
         with:
           name: k6-report
           path: summary.html
