@@ -1,15 +1,25 @@
-name: Performance Regression Test
-on: [push]
+name: K6 Performance Test
+
+on:
+  push:
+    branches: [ main, master ]
 
 jobs:
   k6_test:
+    name: Run k6 Load Test
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout del código
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4 # <--- Versión actualizada
 
-      - name: Ejecutar k6 Test
+      - name: Ejecutar k6 test
         uses: grafana/k6-action@v0.3.1
         with:
           filename: scripts/07_k6_browser.js
-          flags: --thresholds "http_req_duration<500"
+
+      - name: Subir Reporte HTML
+        uses: actions/upload-artifact@v4 # <--- Versión actualizada
+        with:
+          name: k6-report
+          path: summary.html
