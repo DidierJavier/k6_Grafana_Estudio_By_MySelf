@@ -13,18 +13,20 @@ jobs:
       - name: Checkout del código
         uses: actions/checkout@v4
 
-      # PASO CLAVE: Instalar Chromium y dependencias en el Runner
-      - name: Instalar Chromium
+      # 1. Instalamos k6 manualmente (es muy rápido)
+      - name: Instalar k6
         run: |
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
           sudo apt-get update
-          sudo apt-get install -y chromium-browser
+          sudo apt-get install k6
 
+      # 2. Corremos k6 directamente usando el Chrome que ya tiene Ubuntu
       - name: Ejecutar k6 browser test
-        uses: grafana/k6-action@v0.3.1
-        with:
-          filename: scripts/07_k6_browser.js
-          # Le decimos a k6 dónde está el binario de Chromium instalado
-          flags: --env K6_BROWSER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+        run: |
+          k6 run scripts/07_k6_browser.js
+        env:
+          K6_BROWSER_EXECUTABLE_PATH: /usr/bin/google-chrome
 
       - name: Subir Reporte HTML
         uses: actions/upload-artifact@v4
