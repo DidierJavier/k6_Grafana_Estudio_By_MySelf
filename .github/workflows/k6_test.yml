@@ -1,0 +1,15 @@
+name: Performance Regression Test
+on: [push]
+
+jobs:
+  k6_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v3
+
+      - name: Ejecutar k6 Test
+        uses: grafana/k6-action@v0.3.1
+        with:
+          filename: scripts/07_k6_browser.js
+          flags: --thresholds "http_req_duration<500"
